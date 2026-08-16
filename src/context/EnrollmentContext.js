@@ -24,23 +24,21 @@ function enrollmentReducer(state, action) {
 
 export function EnrollmentProvider({ children }) {
 
-  const [enrolledIds, dispatch] = useReducer(
-    enrollmentReducer,
-    []
-  );
-
+  const [enrolledIds, action] = useReducer(enrollmentReducer, []);
   const [isLoaded, setIsLoaded] = useState(false);
 
   useEffect(() => {
     const saved = localStorage.getItem("enrolledCourses");
 
     if (saved) {
-      JSON.parse(saved).forEach((id) => {
-        dispatch({
-          type: "ENROLL",
-          id,
+      try {
+        const parsed = JSON.parse(saved);
+        parsed.forEach((id) => {
+          action({ type: "ENROLL", id });
         });
-      });
+      } catch (e) {
+        console.error("Failed to parse localStorage:", e);
+      }
     }
 
     setIsLoaded(true);
@@ -63,8 +61,9 @@ export function EnrollmentProvider({ children }) {
     <EnrollmentContext.Provider
       value={{
         enrolledIds,
-        dispatch,
+        action,
         isEnrolled,
+        isLoaded,
       }}
     >
       {children}
